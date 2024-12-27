@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "es2016",
+    "module": "commonjs",
+    "outDir": "./dist",
+    "rootDir": "./",
+    "types": ["node", "express", "cors"],  // Add express and cors explicitly here
+    "esModuleInterop": true,
+    "skipLibCheck": true,   // Skip checking third-party types
+    "forceConsistentCasingInFileNames": true,
+    "strict": true
+  }
+}
