@@ -3,7 +3,6 @@ const express = require("express");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 import cors, { CorsOptions } from "cors";
-const numberRoutes = require("../routes/NumbersRoute");
 const authRoutes = require("../routes/AuthRoute");
 dotenv.config();
 const app = express();
@@ -48,8 +47,6 @@ mongoose
   .catch((err: any) => console.log(err));
 
 app.get("/", (req: Request, res: Response) => res.send("API is running"));
-
-app.use("/api/numbers", numberRoutes);
 
 app.use("/api/auth", authRoutes);
 

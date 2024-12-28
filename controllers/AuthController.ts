@@ -9,59 +9,6 @@ if (!JWT_SECRET) {
   throw new Error("JWT_SECRET must be defined");
 }
 
-const getAllUsers = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const users = await User.find().select("-password");
-    res.status(200).json(users);
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
-
-const getProfile = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const username = req.params.username;
-    const user = await User.findOne({ username }).select("-password");
-
-    if (!user) {
-      res.status(404).json({ message: "User not found" });
-      return;
-    }
-
-    res.status(200).json(user);
-  } catch (error) {
-    console.error("Error fetching user data:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
-
-const addProfileView = async (req: Request, res: Response): Promise<void> => {
-  const user = req.body.user;
-  if (!user) {
-    res
-      .status(400)
-      .json({ message: "No user logged in. Not adding profile view." });
-    return;
-  }
-  try {
-    const username = req.params.username;
-    const profile = await User.findOne({ username }).select("-password");
-
-    if (!profile) {
-      res.status(404).json({ message: "User not found" });
-      return;
-    }
-
-    profile.profile_views++;
-    await profile.save();
-
-    res.status(200).json(profile);
-  } catch (error) {
-    console.error("Error fetching user data:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
 
 const updateUser = async (req: Request, res: Response): Promise<void> => {
   const { userId, username } = req.body;
@@ -180,9 +127,6 @@ const loginUser = async (req: Request, res: Response) => {
 export {
   getUser,
   registerUser,
-  getProfile,
-  addProfileView,
   updateUser,
-  getAllUsers,
   loginUser,
 };
