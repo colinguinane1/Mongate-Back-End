@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 import cors, { CorsOptions } from "cors";
 const authRoutes = require("../routes/AuthRoute");
+const emailRoutes = require("../routes/EmailRoutes");
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -49,5 +50,7 @@ mongoose
 app.get("/", (req: Request, res: Response) => res.send("API is running"));
 
 app.use("/api/auth", authRoutes);
+
+app.use("/api/email", emailRoutes);
 
 module.exports = app;
