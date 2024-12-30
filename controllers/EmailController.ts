@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { Resend } from "resend";
 import crypto from "crypto";
 import User from "../models/UserModel";
+import fs from "fs";
+import path from "path";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -40,12 +42,41 @@ const verifyEmail = async (req: Request, res: Response) => {
   user.emailVerificationCodeExpiration = new Date(Date.now() + 600000);
   await user.save();
   try {
-    const data = await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: "Colin <mern-template@c-g.dev>",
       to: [email],
       subject: `Verification Code ${verificationCode}`,
-      html: `<p>Your verification code is: <strong>${verificationCode}</strong></p>`,
+      html: `<html dir="ltr" lang="en">
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+    <meta name="x-apple-disable-message-reformatting" />
+  </head>
+  <body style="background-color:#ffffff">
+    <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="max-width:37.5em;padding-left:12px;padding-right:12px;margin:0 auto">
+      <tbody>
+        <tr style="width:100%">
+          <td>
+            <h1 style="color:#333;">Confirm your account.</h1>
+            <p>MERN-Template</p>
+            <p style="font-size:14px;">Your verification code is: <code>${verificationCode}</code></p>
+            <p>If you didn't request this code, please ignore this email.</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>`,
     });
+    console.log("Resend data:", data);
+    console.log("Resend error:", error);
+
+    if (error) {
+      res.status(500).json({
+        message: "Error sending verification code",
+        error: error.message,
+      });
+      return;
+    }
 
     res.status(200).json({ message: "Verification code sent" });
   } catch (error) {

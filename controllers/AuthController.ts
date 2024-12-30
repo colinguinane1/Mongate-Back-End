@@ -9,7 +9,6 @@ if (!JWT_SECRET) {
   throw new Error("JWT_SECRET must be defined");
 }
 
-
 const updateUser = async (req: Request, res: Response): Promise<void> => {
   const { userId, username } = req.body;
   try {
@@ -61,7 +60,7 @@ const getUser = async (req: Request, res: Response): Promise<void> => {
 
 const registerUser = async (req: Request, res: Response) => {
   const { email, password } = req.body;
-  console.log("Received registration request:", { email, password });
+  console.log("Received registration request:", { email });
 
   try {
     const userExists = await User.findOne({ email });
@@ -74,7 +73,6 @@ const registerUser = async (req: Request, res: Response) => {
     const name = email.split("@")[0];
 
     const username = name + Math.floor(Math.random() * 9999) + 1;
-
 
     const user = new User({
       email,
@@ -124,9 +122,4 @@ const loginUser = async (req: Request, res: Response) => {
   }
 };
 
-export {
-  getUser,
-  registerUser,
-  updateUser,
-  loginUser,
-};
+export { getUser, registerUser, updateUser, loginUser };
