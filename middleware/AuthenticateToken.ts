@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
-const User = require("../types/types");
+const User = require("../types/User");
 import dotenv from "dotenv";
 dotenv.config();
 

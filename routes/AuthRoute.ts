@@ -5,7 +5,7 @@ import {
   loginUser,
   updateUser,
 } from "../controllers/AuthController";
-import { authenticateToken } from "../middleware/middleware";
+import { authenticateToken } from "../middleware/AuthenticateToken";
 
 const router = express.Router();
 
