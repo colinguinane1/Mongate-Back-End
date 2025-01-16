@@ -84,6 +84,113 @@ const verifyEmail = async (req: Request, res: Response) => {
   }
 };
 
+const forgotPassword = async (req: Request, res: Response) => {
+  const { email } = req.body;
+  console.log("Received email request:", { email });
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    res.status(404).json({ message: "User not found" });
+    return;
+  }
+
+  const currentTime = new Date();
+
+  if (
+      user.resetPasswordToken &&
+      user.resetPasswordExpiration &&
+      user.resetPasswordExpiration > currentTime
+  ) {
+    const timeRemaining =
+        (user.resetPasswordExpiration.getTime() - currentTime.getTime()) /
+        60000;
+    res.status(400).json({
+      message: `Verification code already sent. Please wait ${Math.ceil(
+          timeRemaining
+      )} minutes.`,
+    });
+    return;
+  }
+
+  const verificationCode = crypto.randomInt(100000, 999999).toString();
+
+  user.resetPasswordToken = verificationCode;
+  user.resetPasswordExpiration = new Date(Date.now() + 600000);
+  await user.save();
+  try {
+    const { data, error } = await resend.emails.send({
+      from: "Colin <mern-template@c-g.dev>",
+      to: [email],
+      subject: `Forgot Password? - [${verificationCode}]`,
+      html: `<html dir="ltr" lang="en">
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+    <meta name="x-apple-disable-message-reformatting" />
+  </head>
+  <body style="background-color:#ffffff">
+    <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="max-width:37.5em;padding-left:12px;padding-right:12px;margin:0 auto">
+      <tbody>
+        <tr style="width:100%">
+          <td>
+            <h1 style="color:#333;">Forgot your Password?</h1>
+            <p>MERN-Template</p>
+            <p style="font-size:14px;">Your code is: <code>${verificationCode}</code></p>
+            <p>If you didn't request this code, please ignore this email.</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>`,
+    });
+    console.log("Resend data:", data);
+    console.log("Resend error:", error);
+
+    if (error) {
+      res.status(500).json({
+        message: "Error sending verification code",
+        error: error.message,
+      });
+      return;
+    }
+
+    res.status(200).json({ message: "Verification code sent", token: user.resetPasswordToken, tokenExpiry: user.resetPasswordExpiration });
+  } catch (error) {
+    res.status(400).json(error);
+  }
+};
+
+const verifyPasswordToken = async (req: Request, res: Response) => {
+  const { email, code } = req.body;
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+    if (user.resetPasswordToken !== code) {
+      res.status(400).json({ message: "Invalid verification code" });
+      return;
+    }
+    if (
+        user.resetPasswordExpiration &&
+        user.resetPasswordExpiration < new Date()
+    ) {
+      res.status(400).json({ message: "Verification code expired" });
+      return;
+    }
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpiration = undefined;
+    await user.save();
+    res.status(200).json({ message: "Email verified" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error", error });
+  }
+};
+
+
 const verifyCode = async (req: Request, res: Response) => {
   const { userId, code } = req.body;
   try {
@@ -114,4 +221,4 @@ const verifyCode = async (req: Request, res: Response) => {
   }
 };
 
-export { verifyEmail, verifyCode };
+export { verifyEmail, verifyCode, forgotPassword, verifyPasswordToken };

@@ -9,6 +9,8 @@ const userSchema = new Schema<User>({
   emailVerificationCode: { type: String },
   verified: { type: Boolean, default: false },
   emailVerificationCodeExpiration: { type: Date },
+    resetPasswordToken: { type: String },
+    resetPasswordExpiration: { type: Date },
 });
 
 userSchema.pre("save", async function (next) {
