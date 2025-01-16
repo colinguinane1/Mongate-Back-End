@@ -183,7 +183,7 @@ const verifyPasswordToken = async (req: Request, res: Response) => {
       res.status(400).json({ message: "Verification code expired" });
       return;
     }
-    user.password = await bcrypt.hash(newPassword, 10);
+    user.password = newPassword;
 
     user.resetPasswordToken = undefined;
     user.resetPasswordExpiration = undefined;

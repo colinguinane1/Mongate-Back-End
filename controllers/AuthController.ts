@@ -10,7 +10,7 @@ if (!JWT_SECRET) {
 }
 
 const updateUser = async (req: Request, res: Response): Promise<void> => {
-  const { userId, username } = req.body;
+  const {userId, username, password} = req.body;
   try {
     if (!userId || !username) {
       res.status(400).json({ message: "Missing Data" });
@@ -28,11 +28,17 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
     const usernameExists = await User.findOne({ username });
-    if (usernameExists) {
+    if ((username !== user.username) && usernameExists) {
       res.status(400).json({ message: "Username already exists" });
       return;
     }
-    user.username = username;
+    if (username !== user.username) {
+      user.username = username;
+    }
+
+    if (password) {
+      user.password = password;
+    }
     await user.save();
     res.status(200).json({ user, message: "User updated successfully" });
   } catch (error) {
@@ -102,13 +108,16 @@ const loginUser = async (req: Request, res: Response) => {
   try {
     const user = await User.findOne({ email });
     if (!user) {
+      console.log("User not found:", email);
       res.status(400).json({ message: "Invalid credentials" });
       return;
     }
 
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
+      console.log("Invalid password:", email);
       res.status(400).json({ message: "Invalid credentials" });
+      return;
     }
 
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
