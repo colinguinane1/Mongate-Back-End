@@ -4,6 +4,7 @@ import crypto from "crypto";
 import User from "../models/UserModel";
 import fs from "fs";
 import path from "path";
+import bcrypt from "bcryptjs";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -98,6 +99,7 @@ const forgotPassword = async (req: Request, res: Response) => {
   const currentTime = new Date();
 
   if (
+      process.env.NODE_ENV === "production" &&
       user.resetPasswordToken &&
       user.resetPasswordExpiration &&
       user.resetPasswordExpiration > currentTime
@@ -162,7 +164,7 @@ const forgotPassword = async (req: Request, res: Response) => {
 };
 
 const verifyPasswordToken = async (req: Request, res: Response) => {
-  const { email, code } = req.body;
+  const {email, code, newPassword} = req.body;
   try {
     const user = await User.findOne({ email });
 
@@ -181,6 +183,8 @@ const verifyPasswordToken = async (req: Request, res: Response) => {
       res.status(400).json({ message: "Verification code expired" });
       return;
     }
+    user.password = await bcrypt.hash(newPassword, 10);
+
     user.resetPasswordToken = undefined;
     user.resetPasswordExpiration = undefined;
     await user.save();
