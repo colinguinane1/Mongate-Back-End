@@ -188,7 +188,7 @@ const verifyPasswordToken = async (req: Request, res: Response) => {
     user.resetPasswordToken = undefined;
     user.resetPasswordExpiration = undefined;
     await user.save();
-    res.status(200).json({ message: "Email verified" });
+    res.status(200).json({message: "Password changed."});
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error", error });
   }
